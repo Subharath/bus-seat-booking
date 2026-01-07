@@ -1,2 +1,9 @@
-# Bus-Seat-Booking
-The system allows passengers to view available seats, select seats, and book bus tickets easily. It helps bus operators manage bookings without confusion.
+# Bus Seat Booking System
+
+A web-based application that allows passengers to view available seats,
+select seats, and book bus tickets.
+
+## Tech Stack
+- Frontend: React
+- Backend: Node.js + Express
+- Database: PostgreSQL
