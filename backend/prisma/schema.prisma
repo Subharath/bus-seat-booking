@@ -8,15 +8,70 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  role      Role      @default(USER)
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+model Bus {
+  id        Int      @id @default(autoincrement())
+  busNumber String   @unique
+  seats     Seat[]
+  schedules Schedule[]
+}
+
+model Seat {
+  id      Int     @id @default(autoincrement())
+  seatNo  String
+  busId   Int
+  bus     Bus     @relation(fields: [busId], references: [id])
+  bookings Booking[]
+}
+
+model Route {
+  id        Int        @id @default(autoincrement())
+  from      String
+  to        String
+  schedules Schedule[]
+}
+
+model Schedule {
+  id        Int       @id @default(autoincrement())
+  date      DateTime
+  time      String
+  busId     Int
+  routeId   Int
+
+  bus        Bus     @relation(fields: [busId], references: [id])
+  route      Route   @relation(fields: [routeId], references: [id])
+  bookings   Booking[]
+}
+
+model Booking {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  seatId      Int
+  scheduleId  Int
+  status      BookingStatus @default(CONFIRMED)
+  createdAt   DateTime  @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  seat      Seat     @relation(fields: [seatId], references: [id])
+  schedule  Schedule @relation(fields: [scheduleId], references: [id])
+
+  @@unique([seatId, scheduleId]) // 🚨 prevents double booking
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
 }
