@@ -188,6 +188,78 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
+// Admin Login (separate from user login)
+exports.adminLogin = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+
+    // Find admin user
+    const admin = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        password: true,
+      },
+    });
+
+    if (!admin) {
+      return res.status(401).json({
+        message: "Invalid admin email or password",
+      });
+    }
+
+    // Verify it's actually an admin
+    if (admin.role !== "ADMIN") {
+      return res.status(403).json({
+        message: "User is not an admin",
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await comparePassword(password, admin.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: "Invalid admin email or password",
+      });
+    }
+
+    // Generate tokens
+    const tokenPayload = {
+      userId: admin.id,
+      email: admin.email,
+      role: admin.role,
+    };
+
+    const accessToken = generateAccessToken(tokenPayload);
+    const refreshToken = generateRefreshToken(tokenPayload);
+
+    // Remove password from response
+    delete admin.password;
+
+    res.status(200).json({
+      message: "Admin login successful",
+      admin,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 // Get current user (protected route)
 exports.getMe = async (req, res) => {
   try {

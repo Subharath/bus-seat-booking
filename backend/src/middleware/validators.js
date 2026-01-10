@@ -56,3 +56,57 @@ exports.refreshTokenValidation = [
     .notEmpty()
     .withMessage("Refresh token is required"),
 ];
+
+// ==================== ADMIN VALIDATORS ====================
+
+// Bus validators
+exports.busValidation = [
+  body("busNumber")
+    .trim()
+    .notEmpty()
+    .withMessage("Bus number is required"),
+  body("make")
+    .optional()
+    .trim(),
+  body("model")
+    .optional()
+    .trim(),
+  body("totalSeats")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Total seats must be a positive integer"),
+];
+
+// Route validators
+exports.routeValidation = [
+  body("from")
+    .trim()
+    .notEmpty()
+    .withMessage("From location is required"),
+  body("to")
+    .trim()
+    .notEmpty()
+    .withMessage("To location is required"),
+];
+
+// Schedule validators
+exports.scheduleValidation = [
+  body("date")
+    .notEmpty()
+    .withMessage("Date is required")
+    .isISO8601()
+    .withMessage("Invalid date format"),
+  body("time")
+    .notEmpty()
+    .withMessage("Time is required")
+    .matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage("Time must be in HH:MM format"),
+  body("busId")
+    .notEmpty()
+    .isInt()
+    .withMessage("Valid bus ID is required"),
+  body("routeId")
+    .notEmpty()
+    .isInt()
+    .withMessage("Valid route ID is required"),
+];

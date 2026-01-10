@@ -4,10 +4,24 @@ require("dotenv").config();
 
 const app = express();
 
-// CORS configuration
+// CORS configuration - Allow multiple localhost ports for development
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:5173", // Vite default
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -23,9 +37,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/auth.routes"));
 
 // Admin routes (protected)
-app.use("/api/admin/buses", require("./routes/admin.bus.routes"));
-app.use("/api/admin/routes", require("./routes/admin.route.routes"));
-app.use("/api/admin/schedules", require("./routes/admin.schedule.routes"));
+app.use("/api/admin", require("./routes/admin.routes"));
 
 // User routes (public booking routes, protected user routes)
 app.use("/api/user", require("./routes/user.routes"));

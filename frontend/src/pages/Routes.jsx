@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { routesAPI } from '../services/api'
 
 const Routes = () => {
+  const navigate = useNavigate()
   const [routes, setRoutes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -62,7 +64,10 @@ const Routes = () => {
                 </div>
                 <span className="text-3xl">🚌</span>
               </div>
-              <button className="btn btn-primary w-full">
+              <button
+                onClick={() => navigate(`/routes/${route.id}/schedules`)}
+                className="btn btn-primary w-full"
+              >
                 View Schedules
               </button>
             </div>

@@ -5,31 +5,40 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import RoutesPage from './pages/Routes'
+import ScheduleSelection from './pages/ScheduleSelection'
+import SeatSelection from './pages/SeatSelection'
+import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Layout>
-          <Routes>
+        <Routes>
+          {/* Admin Routes - No Layout */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+          {/* User Routes - With Layout */}
+          <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/routes" element={<RoutesPage />} />
+            <Route path="/routes/:routeId/schedules" element={<ScheduleSelection />} />
+            <Route path="/schedules/:scheduleId/seats" element={<SeatSelection />} />
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <div className="container mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold">Dashboard</h1>
-                    <p className="mt-4 text-gray-600">Your bookings will appear here.</p>
-                  </div>
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
-          </Routes>
-        </Layout>
+          </Route>
+        </Routes>
       </Router>
     </AuthProvider>
   )
