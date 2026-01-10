@@ -3,10 +3,16 @@ const prisma = require("../prisma");
 // CREATE BUS
 exports.createBus = async (req, res) => {
   try {
-    const { busNumber } = req.body;
+    const { busNumber, make, model, seatLayout, totalSeats } = req.body;
 
     const bus = await prisma.bus.create({
-      data: { busNumber },
+      data: {
+        busNumber,
+        make: make || null,
+        model: model || null,
+        seatLayout: seatLayout || null,
+        totalSeats: totalSeats || null,
+      },
     });
 
     res.status(201).json(bus);
@@ -17,10 +23,15 @@ exports.createBus = async (req, res) => {
 
 // GET ALL BUSES
 exports.getBuses = async (req, res) => {
-  const buses = await prisma.bus.findMany({
-    include: { seats: true },
-  });
-  res.json(buses);
+  try {
+    const buses = await prisma.bus.findMany({
+      include: { seats: true },
+      orderBy: { id: "desc" },
+    });
+    res.json(buses);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // DELETE BUS

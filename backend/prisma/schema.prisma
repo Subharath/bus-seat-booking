@@ -12,16 +12,21 @@ model User {
   name      String
   email     String    @unique
   password  String
+  phone     String?
   role      Role      @default(USER)
   bookings  Booking[]
   createdAt DateTime  @default(now())
 }
 
 model Bus {
-  id        Int      @id @default(autoincrement())
-  busNumber String   @unique
-  seats     Seat[]
-  schedules Schedule[]
+  id         Int      @id @default(autoincrement())
+  busNumber  String   @unique
+  make       String?  // e.g., "Ashok Leyland", "Tata", "Volvo"
+  model      String?  // e.g., "Viking", "Leyland", "B7R"
+  seatLayout Json?    // Dynamic seat configuration (layout type, rows, columns, seat positions)
+  totalSeats Int?     // Total number of seats
+  seats      Seat[]
+  schedules  Schedule[]
 }
 
 model Seat {
@@ -52,12 +57,15 @@ model Schedule {
 }
 
 model Booking {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  seatId      Int
-  scheduleId  Int
-  status      BookingStatus @default(CONFIRMED)
-  createdAt   DateTime  @default(now())
+  id            Int       @id @default(autoincrement())
+  bookingId     String?   @unique @default(uuid()) // Unique booking identifier for users (optional for migration)
+  userId        Int
+  seatId        Int
+  scheduleId    Int
+  passengerName String?   // Passenger name (can be different from user name) - optional for migration
+  phoneNumber   String?   // Passenger phone number
+  status        BookingStatus @default(CONFIRMED)
+  createdAt     DateTime  @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
   seat      Seat     @relation(fields: [seatId], references: [id])

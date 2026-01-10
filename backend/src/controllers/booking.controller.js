@@ -51,10 +51,22 @@ exports.getAvailableSeats = async (req, res) => {
 
 // BOOK A SEAT
 exports.bookSeat = async (req, res) => {
-  const { userId, seatId, scheduleId } = req.body;
+  // Get userId from authenticated user (JWT token)
+  const userId = req.user.userId;
+  const { seatId, scheduleId, passengerName, phoneNumber } = req.body;
 
   try {
-    // 1. Check schedule exists
+    // 1. Get user info for fallback passenger name
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, phone: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 2. Check schedule exists
     const schedule = await prisma.schedule.findUnique({
       where: { id: Number(scheduleId) },
     });
@@ -63,7 +75,7 @@ exports.bookSeat = async (req, res) => {
       return res.status(404).json({ message: "Schedule not found" });
     }
 
-    // 2. Check seat exists
+    // 3. Check seat exists
     const seat = await prisma.seat.findUnique({
       where: { id: Number(seatId) },
     });
@@ -72,14 +84,14 @@ exports.bookSeat = async (req, res) => {
       return res.status(404).json({ message: "Seat not found" });
     }
 
-    // 3. Ensure seat belongs to the bus used in this schedule
+    // 4. Ensure seat belongs to the bus used in this schedule
     if (seat.busId !== schedule.busId) {
       return res.status(400).json({
         message: "Seat does not belong to this schedule's bus",
       });
     }
 
-    // 4. Check if seat already booked for this schedule
+    // 5. Check if seat already booked for this schedule
     const existingBooking = await prisma.booking.findFirst({
       where: {
         seatId: Number(seatId),
@@ -94,20 +106,62 @@ exports.bookSeat = async (req, res) => {
       });
     }
 
-    // 5. Create booking
+    // 6. Create booking with passenger details
     const booking = await prisma.booking.create({
       data: {
         userId: Number(userId),
         seatId: Number(seatId),
         scheduleId: Number(scheduleId),
+        passengerName: passengerName || user.name, // Use provided name or user's name
+        phoneNumber: phoneNumber || user.phone || null, // Use provided phone or user's phone
+      },
+      include: {
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                id: true,
+                busNumber: true,
+                make: true,
+                model: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
-    res.status(201).json(booking);
+    res.status(201).json({
+      message: "Booking created successfully",
+      booking: {
+        id: booking.id,
+        bookingId: booking.bookingId, // Unique booking ID for user reference
+        passengerName: booking.passengerName,
+        phoneNumber: booking.phoneNumber,
+        seat: booking.seat,
+        schedule: booking.schedule,
+        status: booking.status,
+        createdAt: booking.createdAt,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Internal server error",
+      error: error.message,
     });
   }
 };
@@ -117,27 +171,44 @@ exports.bookSeat = async (req, res) => {
 // CANCEL BOOKING
 exports.cancelBooking = async (req, res) => {
   const { bookingId } = req.params;
+  const userId = req.user.userId;
+  const userRole = req.user.role;
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: Number(bookingId) },
-  });
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: Number(bookingId) },
+    });
 
-  if (!booking) {
-    return res.status(404).json({
-      message: "Booking not found",
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
+
+    // Check if user owns the booking or is an admin
+    if (booking.userId !== userId && userRole !== "ADMIN") {
+      return res.status(403).json({
+        message: "You can only cancel your own bookings",
+      });
+    }
+
+    if (booking.status === "CANCELLED") {
+      return res.status(400).json({
+        message: "Booking already cancelled",
+      });
+    }
+
+    await prisma.booking.update({
+      where: { id: Number(bookingId) },
+      data: { status: "CANCELLED" },
+    });
+
+    res.json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
     });
   }
-
-  if (booking.status === "CANCELLED") {
-    return res.status(400).json({
-      message: "Booking already cancelled",
-    });
-  }
-
-  await prisma.booking.update({
-    where: { id: Number(bookingId) },
-    data: { status: "CANCELLED" },
-  });
-
-  res.json({ message: "Booking cancelled successfully" });
 };
