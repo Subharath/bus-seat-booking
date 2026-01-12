@@ -18,7 +18,7 @@ const Header = () => {
             <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">🚌</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">Bus Booking</span>
+            <span className="text-xl font-bold text-gray-900">LankaRoute</span>
           </Link>
 
           <div className="flex items-center space-x-6">

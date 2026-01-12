@@ -92,7 +92,7 @@ const Dashboard = () => {
           <body>
             <div class="ticket-container">
               <div class="header">
-                <div class="logo">🎫 Bus Booking Ticket</div>
+                <div class="logo">🎫 LankaRoute Ticket</div>
                 <div class="subtitle">Your Journey Confirmation</div>
               </div>
               
@@ -143,7 +143,7 @@ const Dashboard = () => {
               </div>
 
               <div class="footer">
-                <p>Thank you for choosing us! Have a great journey!</p>
+                <p>Thank you for choosing LankaRoute! Have a great journey!</p>
                 <p style="margin-top: 10px; font-size: 11px;">Downloaded on ${new Date().toLocaleString()}</p>
               </div>
             </div>

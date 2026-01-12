@@ -42,7 +42,7 @@ const BookingConfirmationModal = ({ bookingIds, seats, schedule, onClose }) => {
           <body>
             <div class="ticket-container">
               <div class="header">
-                <div class="logo">🎫 Bus Booking Tickets</div>
+                <div class="logo">🎫 LankaRoute Tickets</div>
                 <div class="subtitle">Confirmed Reservations</div>
               </div>
               

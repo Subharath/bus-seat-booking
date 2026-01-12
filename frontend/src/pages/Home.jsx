@@ -11,7 +11,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl font-bold mb-6">
-              Book Your Bus Seat in Sri Lanka
+              Welcome to LankaRoute
             </h1>
             <p className="text-xl mb-8 text-primary-100">
               Easy, fast, and reliable bus seat booking for all major routes across Sri Lanka

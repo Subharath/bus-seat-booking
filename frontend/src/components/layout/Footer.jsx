@@ -4,9 +4,9 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">Bus Booking</h3>
+            <h3 className="text-lg font-bold mb-4">LankaRoute</h3>
             <p className="text-gray-400">
-              Your trusted partner for bus seat booking in Sri Lanka.
+              Sri Lanka's trusted partner for convenient and reliable bus seat booking.
             </p>
           </div>
           <div>
@@ -27,14 +27,14 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Contact</h3>
             <p className="text-gray-400">
-              Email: support@busbooking.lk
+              Email: support@lankaroute.lk
               <br />
               Phone: +94 11 234 5678
             </p>
           </div>
         </div>
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2026 Bus Booking System. All rights reserved.</p>
+          <p>&copy; 2026 LankaRoute. All rights reserved.</p>
         </div>
       </div>
     </footer>
