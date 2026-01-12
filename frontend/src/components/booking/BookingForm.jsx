@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { bookingAPI } from '../../services/api'
+import BookingConfirmationModal from './BookingConfirmationModal'
 
 const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => {
   const { user } = useAuth()
@@ -15,6 +16,8 @@ const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => 
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [confirmationData, setConfirmationData] = useState(null)
 
   const handleChange = (seatId, field, value) => {
     setPassengerDetails({
@@ -51,13 +54,17 @@ const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => 
 
       const results = await Promise.all(bookingPromises)
 
-      // Show success message
-      const bookingIds = results.map((r) => r.data.booking.bookingId).join(', ')
-      alert(`✓ Booking confirmed!\n\nBooking IDs:\n${bookingIds}\n\nYou will receive confirmation via email.`)
-
-      onSuccess()
+      // Show professional confirmation modal
+      const bookingIds = results.map((r) => r.data.booking.bookingId)
+      setConfirmationData({
+        bookingIds,
+        seats,
+        schedule,
+      })
+      setShowConfirmation(true)
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Booking failed. Please try again.')
+
     } finally {
       setLoading(false)
     }
@@ -186,6 +193,19 @@ const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => 
           <li>You can cancel up to 24 hours before departure</li>
         </ul>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && confirmationData && (
+        <BookingConfirmationModal
+          bookingIds={confirmationData.bookingIds}
+          seats={confirmationData.seats}
+          schedule={confirmationData.schedule}
+          onClose={() => {
+            setShowConfirmation(false)
+            onSuccess()
+          }}
+        />
+      )}
     </div>
   )
 }

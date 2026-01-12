@@ -60,6 +60,105 @@ const Dashboard = () => {
     })
   }
 
+  const downloadTicketPDF = (booking) => {
+    try {
+      const printWindow = window.open('', '', 'height=600,width=800')
+      const totalPrice = booking.schedule?.ticketPrice || 0
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+              .ticket-container { max-width: 600px; margin: 0 auto; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #0066cc; padding-bottom: 15px; }
+              .logo { font-size: 28px; font-weight: bold; color: #0066cc; }
+              .subtitle { color: #666; margin-top: 5px; }
+              .booking-section { margin-bottom: 25px; padding: 15px; background: #f9f9f9; border-left: 4px solid #0066cc; }
+              .booking-title { font-size: 14px; color: #0066cc; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+              .booking-id { font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace; color: #000; margin-bottom: 15px; }
+              .seat-info { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+              .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px 0; border-bottom: 1px dotted #ddd; }
+              .info-label { color: #666; font-weight: bold; }
+              .info-value { text-align: right; }
+              .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd; color: #666; font-size: 12px; }
+              .important { background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 20px; font-size: 13px; }
+              .status { display: inline-block; padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+              .status.confirmed { background: #d4edda; color: #155724; }
+              .status.cancelled { background: #f8d7da; color: #721c24; }
+            </style>
+          </head>
+          <body>
+            <div class="ticket-container">
+              <div class="header">
+                <div class="logo">🎫 Bus Booking Ticket</div>
+                <div class="subtitle">Your Journey Confirmation</div>
+              </div>
+              
+              <div class="booking-section">
+                <div class="booking-title">Ticket Details</div>
+                <div class="status ${booking.status === 'CONFIRMED' ? 'confirmed' : 'cancelled'}">${booking.status}</div>
+                <div class="booking-id">ID: ${booking.bookingId}</div>
+                <div class="seat-info">Seat: ${booking.seat?.seatNo}</div>
+                
+                <div class="info-row">
+                  <span class="info-label">Passenger:</span>
+                  <span class="info-value">${booking.passengerName || user?.name}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Route:</span>
+                  <span class="info-value">${booking.schedule?.route?.from} → ${booking.schedule?.route?.to}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Date:</span>
+                  <span class="info-value">${new Date(booking.schedule?.date).toLocaleDateString()}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Time:</span>
+                  <span class="info-value">${booking.schedule?.time}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Bus:</span>
+                  <span class="info-value">${booking.schedule?.bus?.busNumber}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Price:</span>
+                  <span class="info-value">Rs. ${totalPrice}</span>
+                </div>
+                <div class="info-row" style="border: none; margin-top: 10px;">
+                  <span class="info-label">Booked On:</span>
+                  <span class="info-value">${new Date(booking.createdAt).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div class="important">
+                <strong>📌 Important Information:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>Please arrive 30 minutes before departure</li>
+                  <li>Keep this ticket safe for your journey</li>
+                  ${booking.status === 'CONFIRMED' ? '<li>You can cancel up to 24 hours before departure</li>' : ''}
+                  <li>For any queries, contact our support team</li>
+                </ul>
+              </div>
+
+              <div class="footer">
+                <p>Thank you for choosing us! Have a great journey!</p>
+                <p style="margin-top: 10px; font-size: 11px;">Downloaded on ${new Date().toLocaleString()}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.print()
+    } catch (err) {
+      console.error('Error downloading PDF:', err)
+      alert('Failed to generate PDF')
+    }
+  }
+
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -155,7 +254,7 @@ const Dashboard = () => {
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600">Passenger</p>
-                        <p className="font-medium">{booking.passengerName || 'N/A'}</p>
+                        <p className="font-medium">{booking.passengerName ? booking.passengerName : user?.name}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Seat</p>
@@ -177,13 +276,24 @@ const Dashboard = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Booked On</p>
-                        <p className="font-medium">{formatDate(booking.createdAt)}</p>
+                        <p className="text-gray-600">Booking ID</p>
+                        <p className="font-mono text-xs font-semibold text-blue-600">{booking.bookingId?.substring(0, 12)}...</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Price</p>
+                        <p className="font-medium text-green-600">Rs. {booking.schedule?.ticketPrice || 'N/A'}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="ml-4">
+                  <div className="ml-4 flex flex-col gap-2">
+                    <button
+                      onClick={() => downloadTicketPDF(booking)}
+                      className="btn btn-primary text-sm whitespace-nowrap"
+                    >
+                      📄 Download Ticket
+                    </button>
+
                     {booking.status === 'CONFIRMED' && !booking.cancellationStatus && (
                       <>
                         {selectedBooking === booking.id ? (

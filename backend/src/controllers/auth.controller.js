@@ -345,7 +345,12 @@ exports.getMe = async (req, res) => {
         bookings: {
           select: {
             id: true,
+            bookingId: true,
             status: true,
+            passengerName: true,
+            phoneNumber: true,
+            cancellationStatus: true,
+            cancellationRequestedAt: true,
             createdAt: true,
             seat: {
               select: {
@@ -354,12 +359,21 @@ exports.getMe = async (req, res) => {
             },
             schedule: {
               select: {
+                id: true,
                 date: true,
                 time: true,
+                ticketPrice: true,
                 route: {
                   select: {
                     from: true,
                     to: true,
+                  },
+                },
+                bus: {
+                  select: {
+                    busNumber: true,
+                    make: true,
+                    model: true,
                   },
                 },
               },
