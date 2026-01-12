@@ -486,7 +486,14 @@
 
 /* Professional Color Variants */
 .btn-primary-light {
-  @apply bg-gradient-to-r from-cyan-400 to-blue-400 text-slate-900 hover:shadow-lg hover:from-cyan-300 hover:to-blue-300;
+  background: linear-gradient(to right, #22d3ee, #60a5fa);
+  color: #0f172a;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-light:hover {
+  background: linear-gradient(to right, #67e8f9, #93c5fd);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Responsive Design */
