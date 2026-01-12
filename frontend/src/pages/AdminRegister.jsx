@@ -1,182 +1,193 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import api from '../services/api'
 
-export default function AdminRegister() {
+const AdminRegister = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
     phone: '',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
 
     // Validation
-    if (!formData.name || !formData.email || !formData.password) {
-      setError('Please fill in all required fields');
-      setLoading(false);
-      return;
-    }
-
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
+      setError('Passwords do not match')
+      return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
+      setError('Password must be at least 6 characters')
+      return
     }
+
+    setLoading(true)
 
     try {
       const response = await api.post('/auth/admin/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        phone: formData.phone || '', // Send empty string instead of null
-      });
+        phone: formData.phone || '',
+      })
 
       // Store tokens and admin info
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('adminUser', JSON.stringify(response.data.admin));
+      localStorage.setItem('accessToken', response.data.accessToken)
+      localStorage.setItem('refreshToken', response.data.refreshToken)
+      localStorage.setItem('adminUser', JSON.stringify(response.data.admin))
 
-      navigate('/admin/dashboard');
+      navigate('/admin/dashboard')
     } catch (err) {
       // Handle validation errors
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
-        const errorMessages = err.response.data.errors.map(e => e.msg).join(', ');
-        setError(errorMessages);
+        const errorMessages = err.response.data.errors.map((e) => e.msg).join(', ')
+        setError(errorMessages)
       } else {
-        setError(err.response?.data?.message || 'Registration failed');
+        setError(err.response?.data?.message || 'Registration failed')
       }
-      console.error('Admin registration error:', err);
+      console.error('Admin registration error:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Registration</h1>
-          <p className="text-gray-600 mt-2">Create a new admin account</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create admin account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link to="/admin/login" className="font-medium text-primary-600 hover:text-primary-500">
+              sign in to existing account
+            </Link>
+          </p>
+          <p className="mt-4 text-center text-sm text-gray-600 border-t pt-4">
+            Looking for user registration?{' '}
+            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
+              User Sign up →
+            </Link>
+          </p>
         </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="input mt-1"
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="input mt-1"
+                placeholder="admin@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number (Optional)
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                className="input mt-1"
+                placeholder="+94771234567"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="input mt-1"
+                placeholder="••••••••"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Must be at least 6 characters with uppercase, lowercase, and number
+              </p>
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="input mt-1"
+                placeholder="••••••••"
+              />
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="John Doe"
-              required
-            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary w-full"
+            >
+              {loading ? 'Creating account...' : 'Create account'}
+            </button>
           </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="admin@example.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Phone Number</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="9876543210"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Registering...' : 'Register as Admin'}
-          </button>
         </form>
-
-        <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-          <p className="text-center text-gray-600">
-            Already have an account?{' '}
-            <Link to="/admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-              Admin Login
-            </Link>
-          </p>
-          <p className="text-center text-gray-600">
-            Not an admin?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-              User Login
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
-  );
+  )
 }
+
+export default AdminRegister

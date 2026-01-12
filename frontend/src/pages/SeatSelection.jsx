@@ -43,16 +43,21 @@ const SeatSelection = () => {
       }
       
       if (!foundSchedule) {
-        throw new Error('Schedule not found')
+        throw new Error(`Schedule ID ${scheduleId} not found. Please select a valid schedule from the routes page.`)
       }
       
       setSchedule(foundSchedule)
 
       // Fetch available seats
-      const seatsResponse = await routesAPI.getAvailableSeats(scheduleId)
-      setAvailableSeats(seatsResponse.data)
+      try {
+        const seatsResponse = await routesAPI.getAvailableSeats(scheduleId)
+        setAvailableSeats(seatsResponse.data)
+      } catch (seatErr) {
+        const seatErrorMsg = seatErr.response?.data?.message || seatErr.message
+        throw new Error(`Could not load seats: ${seatErrorMsg}. This might mean the bus has no seats configured. Please contact support.`)
+      }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to load seat information')
+      setError(err.message || err.response?.data?.message || 'Failed to load seat information')
     } finally {
       setLoading(false)
     }
@@ -85,15 +90,26 @@ const SeatSelection = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-12">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Unable to Load Seats</h3>
+            <p className="text-red-700 mb-4">{error}</p>
+            <div className="space-y-2">
+              <p className="text-sm text-red-600"><strong>What to do:</strong></p>
+              <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+                <li>Go back to the <strong>Routes</strong> page and select a schedule from the list</li>
+                <li>Make sure you have selected a valid schedule date and time</li>
+                <li>Contact support if the problem persists</li>
+              </ul>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/routes')}
+            className="btn btn-primary mt-6"
+          >
+            Back to Routes
+          </button>
         </div>
-        <button
-          onClick={() => navigate('/routes')}
-          className="btn btn-primary mt-4"
-        >
-          Back to Routes
-        </button>
       </div>
     )
   }

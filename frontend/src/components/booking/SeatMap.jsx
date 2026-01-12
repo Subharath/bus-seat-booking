@@ -136,8 +136,10 @@ const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
       {/* Seat Grid */}
       <div className="space-y-3">
         {seatGrid.map((row, rowIndex) => {
-          // Determine layout based on row: first rows are 2x2, last row is 5 seats
-          const isLastRow = rowIndex === seatGrid.length - 1
+          // Determine layout based on actual row length, not position
+          const rowLength = row.length
+          const isFourSeats = rowLength === 4
+          const isFiveSeats = rowLength === 5
 
           return (
             <div key={rowIndex} className="flex items-center justify-center gap-4">
@@ -146,10 +148,10 @@ const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
                 {row[0]?.seatNo.match(/^([A-Z]+)/)?.[1] || ''}
               </div>
 
-              {/* Seats Container - 2x2 layout with aisle or 5 seats for last row */}
-              {isLastRow ? (
-                // Last row: 5 seats in a line
-                <div className="flex gap-3">
+              {/* Seats Container - Determine layout by actual seat count */}
+              {isFiveSeats ? (
+                // 5 seats: centered in a line
+                <div className="flex gap-2 justify-center">
                   {row.map((seat, seatIndex) => {
                     const reserved = isReservedSeat(seat.seatNo, rowIndex)
                     const status = reserved ? 'reserved' : getSeatStatus(seat)
@@ -173,8 +175,8 @@ const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
                     )
                   })}
                 </div>
-              ) : (
-                // Regular rows: 2x2 layout with aisle gap
+              ) : isFourSeats ? (
+                // 4 seats: 2x2 layout with aisle gap
                 <div className="flex gap-8">
                   {/* Left column (2 seats) */}
                   <div className="flex gap-3">
@@ -230,6 +232,32 @@ const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
                       )
                     })}
                   </div>
+                </div>
+              ) : (
+                // Any other count: flexible centered layout
+                <div className="flex gap-2 justify-center">
+                  {row.map((seat, seatIndex) => {
+                    const reserved = isReservedSeat(seat.seatNo, rowIndex)
+                    const status = reserved ? 'reserved' : getSeatStatus(seat)
+                    const isClickable = !reserved && (status === 'available' || status === 'selected')
+
+                    return (
+                      <button
+                        key={seatIndex}
+                        onClick={() => isClickable && onSeatSelect(seat)}
+                        disabled={!isClickable}
+                        className={`
+                          w-12 h-12 rounded text-white font-medium text-sm
+                          transition-all duration-200
+                          ${getSeatColor(status, reserved)}
+                          ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
+                        `}
+                        title={`Seat ${seat.seatNo} - ${reserved ? 'Reserved' : status}`}
+                      >
+                        {seat.seatNo.match(/\d+/)?.[0] || seatIndex + 1}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>

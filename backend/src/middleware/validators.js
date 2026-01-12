@@ -64,17 +64,22 @@ exports.busValidation = [
   body("busNumber")
     .trim()
     .notEmpty()
-    .withMessage("Bus number is required"),
+    .withMessage("Bus number is required")
+    .matches(/^[A-Z0-9]{2}-\d{4}$/)
+    .withMessage("Bus number must be in format: XX-XXXX (e.g., AB-1234 or 12-5678)"),
   body("make")
-    .optional()
-    .trim(),
+    .trim()
+    .notEmpty()
+    .withMessage("Make is required"),
   body("model")
-    .optional()
-    .trim(),
+    .trim()
+    .notEmpty()
+    .withMessage("Model is required"),
   body("totalSeats")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Total seats must be a positive integer"),
+    .notEmpty()
+    .withMessage("Total seats is required")
+    .isInt({ min: 2, max: 999 })
+    .withMessage("Total seats must be a number between 2 and 999"),
 ];
 
 // Route validators

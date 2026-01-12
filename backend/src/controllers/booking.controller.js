@@ -1,52 +1,93 @@
 const prisma = require("../prisma");
+const scheduleController = require("./schedule.controller");
 
 // VIEW ALL ROUTES
 exports.getRoutes = async (req, res) => {
-  const routes = await prisma.route.findMany();
-  res.json(routes);
+  try {
+    const routes = await prisma.route.findMany({
+      include: {
+        schedules: {
+          include: {
+            bus: { include: { seats: true } },
+          },
+        },
+      },
+    });
+    res.json(routes);
+  } catch (error) {
+    console.error("Get routes error:", error);
+    res.status(500).json({ message: "Error fetching routes" });
+  }
 };
 
 // VIEW SCHEDULES FOR A ROUTE
 exports.getSchedulesByRoute = async (req, res) => {
   const { routeId } = req.params;
 
-  const schedules = await prisma.schedule.findMany({
-    where: { routeId: Number(routeId) },
-    include: {
-      bus: { include: { seats: true } },
-      route: true,
-    },
-  });
+  try {
+    const schedules = await prisma.schedule.findMany({
+      where: { routeId: Number(routeId) },
+      include: {
+        bus: { include: { seats: true } },
+        route: true,
+      },
+      orderBy: { date: "asc" },
+    });
 
-  res.json(schedules);
+    res.json(schedules);
+  } catch (error) {
+    console.error("Get schedules error:", error);
+    res.status(500).json({ message: "Error fetching schedules" });
+  }
 };
 
 // GET AVAILABLE SEATS FOR A SCHEDULE
 exports.getAvailableSeats = async (req, res) => {
   const { scheduleId } = req.params;
 
-  const bookedSeats = await prisma.booking.findMany({
-    where: {
-      scheduleId: Number(scheduleId),
-      status: "CONFIRMED",
-    },
-    select: { seatId: true },
-  });
+  try {
+    // Get the schedule with bus info
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: Number(scheduleId) },
+      include: { bus: { include: { seats: true } } },
+    });
 
-  const bookedSeatIds = bookedSeats.map(b => b.seatId);
+    if (!schedule) {
+      return res.status(404).json({ message: "Schedule not found" });
+    }
 
-  const seats = await prisma.seat.findMany({
-    where: {
-      bus: {
-        schedules: {
-          some: { id: Number(scheduleId) },
-        },
+    if (!schedule.bus) {
+      return res.status(404).json({ message: "Bus not found for this schedule" });
+    }
+
+    // Get all seats for this bus
+    const allBusSeats = await prisma.seat.findMany({
+      where: { busId: schedule.bus.id },
+    });
+
+    if (allBusSeats.length === 0) {
+      return res.status(400).json({ message: "No seats found for this bus. Please ensure seats are created." });
+    }
+
+    // Get booked seats for this schedule
+    const bookedSeats = await prisma.booking.findMany({
+      where: {
+        scheduleId: Number(scheduleId),
+        status: "CONFIRMED",
       },
-      id: { notIn: bookedSeatIds },
-    },
-  });
+      select: { seatId: true },
+    });
 
-  res.json(seats);
+    const bookedSeatIds = bookedSeats.map((b) => b.seatId);
+
+    // Get available seats
+    const availableSeats = allBusSeats.filter((seat) => !bookedSeatIds.includes(seat.id));
+
+    res.json(availableSeats);
+  } catch (err) {
+    console.error("Error fetching available seats:", err);
+    res.status(500).json({ message: "Error fetching available seats", error: err.message });
+  }
 };
 
 // BOOK A SEAT
