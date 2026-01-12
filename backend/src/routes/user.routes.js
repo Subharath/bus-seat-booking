@@ -10,6 +10,5 @@ router.get("/schedules/:scheduleId/seats", bookingController.getAvailableSeats);
 
 // Protected routes (booking operations require authentication)
 router.post("/bookings", authenticate, bookingController.bookSeat);
-router.patch("/bookings/:bookingId/cancel", authenticate, bookingController.cancelBooking);
-
+router.post("/bookings/:bookingId/cancel-request", authenticate, bookingController.requestCancellation);
 module.exports = router;

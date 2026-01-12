@@ -12,23 +12,18 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('adminToken');
         const adminData = localStorage.getItem('adminUser');
-        
-        if (adminData) {
-          setAdminUser(JSON.parse(adminData));
-        }
 
-        const response = await api.get('/admin/dashboard/stats', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        if (adminData) setAdminUser(JSON.parse(adminData));
+
+        const response = await api.get('/admin/dashboard/stats');
         setStats(response.data.stats);
       } catch (err) {
         setError('Failed to fetch dashboard stats');
         console.error('Error:', err);
         if (err.response?.status === 403 || err.response?.status === 401) {
-          localStorage.removeItem('adminToken');
-          localStorage.removeItem('adminRefreshToken');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
           localStorage.removeItem('adminUser');
           navigate('/admin/login');
         }
@@ -41,8 +36,8 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminRefreshToken');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('adminUser');
     navigate('/admin/login');
   };

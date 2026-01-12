@@ -26,6 +26,13 @@ const Home = () => {
                 </Link>
               )}
             </div>
+            <div className="mt-6">
+              <p className="text-primary-100 text-sm">
+                <Link to="/admin/login" className="text-white font-semibold hover:underline">
+                  Admin Portal
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </section>

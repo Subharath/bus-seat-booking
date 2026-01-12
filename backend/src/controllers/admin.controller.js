@@ -718,3 +718,296 @@ exports.getDashboardStats = async (req, res) => {
     });
   }
 };
+// ==================== BOOKING CANCELLATIONS ====================
+
+// Get all pending cancellation requests
+exports.getPendingCancellations = async (req, res) => {
+  try {
+    const cancellations = await prisma.booking.findMany({
+      where: {
+        cancellationStatus: "PENDING",
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        cancellationRequestedAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      message: "Pending cancellations retrieved successfully",
+      count: cancellations.length,
+      cancellations,
+    });
+  } catch (error) {
+    console.error("Get pending cancellations error:", error);
+    res.status(500).json({
+      message: "Error fetching pending cancellations",
+      error: error.message,
+    });
+  }
+};
+
+// Get all cancellations (pending, approved, rejected)
+exports.getAllCancellations = async (req, res) => {
+  try {
+    const { status } = req.query;
+    
+    const where = status 
+      ? { cancellationStatus: status }
+      : { NOT: { cancellationStatus: null } };
+
+    const cancellations = await prisma.booking.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        cancellationRequestedAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      message: "Cancellations retrieved successfully",
+      count: cancellations.length,
+      cancellations,
+    });
+  } catch (error) {
+    console.error("Get cancellations error:", error);
+    res.status(500).json({
+      message: "Error fetching cancellations",
+      error: error.message,
+    });
+  }
+};
+
+// Approve cancellation request
+exports.approveCancellation = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { adminNotes } = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: Number(bookingId) },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.cancellationStatus !== "PENDING") {
+      return res.status(400).json({
+        message: "This booking cancellation is not pending",
+      });
+    }
+
+    // Update booking status to cancelled and mark cancellation as approved
+    const updatedBooking = await prisma.booking.update({
+      where: { id: Number(bookingId) },
+      data: {
+        status: "CANCELLED",
+        cancellationStatus: "APPROVED",
+        cancellationApprovedAt: new Date(),
+        adminNotes: adminNotes || null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "Cancellation request approved successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Approve cancellation error:", error);
+    res.status(500).json({
+      message: "Error approving cancellation",
+      error: error.message,
+    });
+  }
+};
+
+// Reject cancellation request
+exports.rejectCancellation = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { reason } = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: Number(bookingId) },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.cancellationStatus !== "PENDING") {
+      return res.status(400).json({
+        message: "This booking cancellation is not pending",
+      });
+    }
+
+    // Update booking to reject cancellation request
+    const updatedBooking = await prisma.booking.update({
+      where: { id: Number(bookingId) },
+      data: {
+        cancellationStatus: "REJECTED",
+        adminNotes: reason || null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        seat: {
+          select: {
+            seatNo: true,
+          },
+        },
+        schedule: {
+          include: {
+            route: true,
+            bus: {
+              select: {
+                busNumber: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "Cancellation request rejected successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Reject cancellation error:", error);
+    res.status(500).json({
+      message: "Error rejecting cancellation",
+      error: error.message,
+    });
+  }
+};

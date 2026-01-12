@@ -82,6 +82,7 @@ export const routesAPI = {
 export const bookingAPI = {
   create: (bookingData) => api.post('/user/bookings', bookingData),
   cancel: (bookingId) => api.patch(`/user/bookings/${bookingId}/cancel`),
+  requestCancellation: (bookingId, data) => api.post(`/user/bookings/${bookingId}/cancel-request`, data),
 }
 
 // Admin API
@@ -90,6 +91,7 @@ export const adminAPI = {
     getAll: () => api.get('/admin/buses'),
     create: (busData) => api.post('/admin/buses', busData),
     delete: (id) => api.delete(`/admin/buses/${id}`),
+    update: (id, busData) => api.put(`/admin/buses/${id}`, busData),
   },
   routes: {
     getAll: () => api.get('/admin/routes'),
@@ -98,6 +100,17 @@ export const adminAPI = {
   schedules: {
     getAll: () => api.get('/admin/schedules'),
     create: (scheduleData) => api.post('/admin/schedules', scheduleData),
+  },
+  bookings: {
+    getAll: () => api.get('/admin/bookings'),
+    getById: (id) => api.get(`/admin/bookings/${id}`),
+    delete: (id) => api.delete(`/admin/bookings/${id}`),
+  },
+  cancellations: {
+    getPending: () => api.get('/admin/cancellations/pending'),
+    getAll: (status) => api.get(`/admin/cancellations${status ? `?status=${status}` : ''}`),
+    approve: (bookingId, data) => api.post(`/admin/cancellations/${bookingId}/approve`, data),
+    reject: (bookingId, data) => api.post(`/admin/cancellations/${bookingId}/reject`, data),
   },
 }
 

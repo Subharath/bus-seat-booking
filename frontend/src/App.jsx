@@ -10,7 +10,12 @@ import SeatSelection from './pages/SeatSelection'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import AdminLogin from './pages/AdminLogin'
+import AdminRegister from './pages/AdminRegister'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminBuses from './pages/AdminBuses'
+import AdminRoutes from './pages/AdminRoutes'
+import AdminSchedules from './pages/AdminSchedules'
+import AdminBookings from './pages/AdminBookings'
 
 function App() {
   return (
@@ -19,7 +24,12 @@ function App() {
         <Routes>
           {/* Admin Routes - No Layout */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/buses" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminBuses /></ProtectedRoute>} />
+          <Route path="/admin/routes" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminRoutes /></ProtectedRoute>} />
+          <Route path="/admin/schedules" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminSchedules /></ProtectedRoute>} />
+          <Route path="/admin/bookings" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminBookings /></ProtectedRoute>} />
 
           {/* User Routes - With Layout */}
           <Route element={<Layout />}>

@@ -65,6 +65,12 @@ const Register = () => {
               sign in to existing account
             </Link>
           </p>
+          <p className="mt-4 text-center text-sm text-gray-600 border-t pt-4">
+            Are you an admin?{' '}
+            <Link to="/admin/register" className="font-medium text-blue-600 hover:text-blue-500 font-semibold">
+              Admin Portal →
+            </Link>
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (

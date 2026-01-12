@@ -11,6 +11,7 @@ const {
 // Public routes
 router.post("/register", registerValidation, authController.register);
 router.post("/login", loginValidation, authController.login);
+router.post("/admin/register", registerValidation, authController.adminRegister);
 router.post("/admin/login", loginValidation, authController.adminLogin);
 router.post("/refresh", refreshTokenValidation, authController.refreshToken);
 

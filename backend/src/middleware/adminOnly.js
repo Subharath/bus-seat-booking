@@ -3,21 +3,37 @@ const authenticate = require("./auth");
 /**
  * Admin Only Middleware
  * Requires authentication AND admin role
- * Must be used after authenticate middleware
+ * Combines both authentication and authorization checks
  */
 const adminOnly = (req, res, next) => {
-  // Check if user is authenticated (should be set by authenticate middleware)
-  if (!req.user) {
-    return res.status(401).json({ message: "Authentication required" });
+  // First check: Authentication
+  // Get token from header
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "Access token is required",
+    });
   }
 
-  // Check if user is admin
-  if (req.user.role !== "ADMIN") {
+  // Extract and verify token
+  try {
+    const { verifyAccessToken } = require("../utils/jwt");
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    const decoded = verifyAccessToken(token);
+    req.user = decoded;
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
+
+  // Second check: Authorization (Admin role)
+  if (!req.user || req.user.role !== "ADMIN") {
     return res.status(403).json({ message: "Admin access only" });
   }
 
   next();
 };
 
-// Export a combined middleware that does both auth and admin check
-module.exports = [authenticate, adminOnly];
+module.exports = adminOnly;

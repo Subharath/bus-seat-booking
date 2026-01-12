@@ -27,7 +27,7 @@ exports.registerValidation = [
     .withMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number"),
 
   body("phone")
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isMobilePhone("any")
     .withMessage("Please provide a valid phone number"),

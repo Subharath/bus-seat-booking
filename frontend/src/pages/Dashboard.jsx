@@ -7,6 +7,8 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [cancellationReason, setCancellationReason] = useState('')
 
   useEffect(() => {
     fetchUserBookings()
@@ -24,18 +26,29 @@ const Dashboard = () => {
     }
   }
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) {
+  const handleRequestCancellation = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to request cancellation? Admin approval is required.')) {
       return
     }
 
     try {
-      await bookingAPI.cancel(bookingId)
+      await bookingAPI.requestCancellation(bookingId, { reason: cancellationReason })
+      setCancellationReason('')
+      setSelectedBooking(null)
       // Refresh bookings
       fetchUserBookings()
-      alert('Booking cancelled successfully')
+      alert('Cancellation request submitted. Please wait for admin approval.')
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to cancel booking')
+      alert(err.response?.data?.message || 'Failed to request cancellation')
+    }
+  }
+
+  const getCancellationStatusColor = (status) => {
+    switch(status) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800'
+      case 'APPROVED': return 'bg-green-100 text-green-800'
+      case 'REJECTED': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -132,6 +145,11 @@ const Dashboard = () => {
                       >
                         {booking.status}
                       </span>
+                      {booking.cancellationStatus && (
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getCancellationStatusColor(booking.cancellationStatus)}`}>
+                          Cancel: {booking.cancellationStatus}
+                        </span>
+                      )}
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
@@ -165,16 +183,60 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  {booking.status === 'CONFIRMED' && (
-                    <div className="ml-4">
-                      <button
-                        onClick={() => handleCancelBooking(booking.id)}
-                        className="btn btn-outline text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+                  <div className="ml-4">
+                    {booking.status === 'CONFIRMED' && !booking.cancellationStatus && (
+                      <>
+                        {selectedBooking === booking.id ? (
+                          <div className="w-64 bg-yellow-50 border border-yellow-200 rounded p-3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Cancellation Reason (Optional)
+                            </label>
+                            <textarea
+                              value={cancellationReason}
+                              onChange={(e) => setCancellationReason(e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              placeholder="Reason for cancellation..."
+                              rows="2"
+                            />
+                            <div className="flex gap-2 text-xs">
+                              <button
+                                onClick={() => handleRequestCancellation(booking.id)}
+                                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-1 rounded font-semibold transition"
+                              >
+                                Confirm Request
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedBooking(null)
+                                  setCancellationReason('')
+                                }}
+                                className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-1 rounded font-semibold transition"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setSelectedBooking(booking.id)}
+                            className="btn btn-outline text-sm"
+                          >
+                            Request Cancel
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {booking.cancellationStatus === 'PENDING' && (
+                      <div className="text-xs text-yellow-700 bg-yellow-50 px-3 py-2 rounded text-center">
+                        Awaiting Admin Approval
+                      </div>
+                    )}
+                    {booking.cancellationStatus === 'REJECTED' && (
+                      <div className="text-xs text-red-700 bg-red-50 px-3 py-2 rounded text-center">
+                        Request Rejected
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

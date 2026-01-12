@@ -20,9 +20,9 @@ export default function AdminLogin() {
         password 
       });
       
-      // Store tokens and admin info
-      localStorage.setItem('adminToken', response.data.accessToken);
-      localStorage.setItem('adminRefreshToken', response.data.refreshToken);
+      // Store tokens and admin info in standard keys so AuthContext and api interceptors work
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('adminUser', JSON.stringify(response.data.admin));
       
       navigate('/admin/dashboard');
@@ -82,7 +82,13 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
+        <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+          <p className="text-center text-gray-600">
+            Don't have an admin account?{' '}
+            <Link to="/admin/register" className="text-blue-600 hover:text-blue-700 font-semibold">
+              Create Account
+            </Link>
+          </p>
           <p className="text-center text-gray-600">
             Not an admin?{' '}
             <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
