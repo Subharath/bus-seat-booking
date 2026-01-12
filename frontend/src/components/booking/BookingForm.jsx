@@ -20,6 +20,15 @@ const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => 
   const [confirmationData, setConfirmationData] = useState(null)
 
   const handleChange = (seatId, field, value) => {
+    // Handle phone number validation
+    if (field === 'phoneNumber') {
+      // Remove any non-digit characters
+      const digitsOnly = value.replace(/\D/g, '')
+      // Limit to 9 digits
+      const limitedDigits = digitsOnly.slice(0, 9)
+      value = limitedDigits
+    }
+
     setPassengerDetails({
       ...passengerDetails,
       [seatId]: {
@@ -151,14 +160,24 @@ const BookingForm = ({ seats, schedule, onSuccess, onCancel, onRemoveSeat }) => 
                   >
                     Phone Number
                   </label>
-                  <input
-                    type="tel"
-                    id={`phone-${seat.id}`}
-                    value={passengerDetails[seat.id]?.phoneNumber || ''}
-                    onChange={(e) => handleChange(seat.id, 'phoneNumber', e.target.value)}
-                    className="input text-sm"
-                    placeholder="+94771234567"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 text-sm font-medium">+94</span>
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      id={`phone-${seat.id}`}
+                      value={passengerDetails[seat.id]?.phoneNumber || ''}
+                      onChange={(e) => handleChange(seat.id, 'phoneNumber', e.target.value)}
+                      className="input text-sm pl-12"
+                      placeholder="771234567"
+                      maxLength="9"
+                      pattern="[0-9]{9}"
+                      title="Please enter exactly 9 digits"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Enter 9 digits only (e.g., 771234567)</p>
                 </div>
               </div>
             </div>
