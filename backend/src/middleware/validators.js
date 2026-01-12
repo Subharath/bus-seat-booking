@@ -114,4 +114,9 @@ exports.scheduleValidation = [
     .notEmpty()
     .isInt()
     .withMessage("Valid route ID is required"),
+  body("ticketPrice")
+    .notEmpty()
+    .withMessage("Ticket price is required")
+    .isInt({ min: 1 })
+    .withMessage("Ticket price must be a positive number"),
 ];

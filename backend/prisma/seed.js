@@ -8,6 +8,21 @@ async function main() {
   await prisma.seat.deleteMany();
   await prisma.bus.deleteMany();
   await prisma.route.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Create admin user
+  const adminPassword = await hashPassword("Admin@123");
+  await prisma.user.create({
+    data: {
+      name: "Admin User",
+      email: "admin@example.com",
+      password: adminPassword,
+      phone: "+94771234567",
+      role: "ADMIN",
+    },
+  });
+
+  console.log("✅ Admin user created: admin@example.com / Admin@123");
 
   // Example Seat Layout 1: Standard 2x2 Layout (15 rows, 4 columns = 60 seats)
   const standardSeatLayout = {

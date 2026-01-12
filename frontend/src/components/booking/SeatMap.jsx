@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
+const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats }) => {
   const [seatLayout, setSeatLayout] = useState(null)
   const [seatGrid, setSeatGrid] = useState([])
 
@@ -79,7 +79,7 @@ const SeatMap = ({ bus, availableSeats, selectedSeat, onSeatSelect }) => {
   }
 
   const getSeatStatus = (seat) => {
-    if (selectedSeat?.id === seat.id) return 'selected'
+    if (selectedSeats?.some(s => s.id === seat.id)) return 'selected'
     const isAvailable = availableSeats.some((s) => s.id === seat.id)
     return isAvailable ? 'available' : 'booked'
   }

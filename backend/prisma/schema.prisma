@@ -45,15 +45,16 @@ model Route {
 }
 
 model Schedule {
-  id        Int       @id @default(autoincrement())
-  date      DateTime
-  time      String
-  busId     Int
-  routeId   Int
+  id           Int       @id @default(autoincrement())
+  date         DateTime
+  time         String
+  busId        Int
+  routeId      Int
+  ticketPrice  Int       @default(2500) // Price per ticket in smallest currency unit (e.g., cents or paisa)
 
-  bus        Bus     @relation(fields: [busId], references: [id])
-  route      Route   @relation(fields: [routeId], references: [id])
-  bookings   Booking[]
+  bus          Bus     @relation(fields: [busId], references: [id])
+  route        Route   @relation(fields: [routeId], references: [id])
+  bookings     Booking[]
 }
 
 model Booking {

@@ -6,7 +6,7 @@ export default function AdminSchedules(){
   const [buses, setBuses] = useState([])
   const [routes, setRoutes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState({ date: '', time: '', busId: '', routeId: '' })
+  const [form, setForm] = useState({ date: '', time: '', busId: '', routeId: '', ticketPrice: '' })
   const [error, setError] = useState(null)
 
   useEffect(()=>{
@@ -40,8 +40,9 @@ export default function AdminSchedules(){
         time: form.time,
         busId: Number(form.busId),
         routeId: Number(form.routeId),
+        ticketPrice: Number(form.ticketPrice),
       })
-      setForm({ date: '', time: '', busId: '', routeId: '' })
+      setForm({ date: '', time: '', busId: '', routeId: '', ticketPrice: '' })
       fetchAll()
     }catch(err){
       setError(err.response?.data?.message || 'Failed to create schedule')
@@ -52,7 +53,7 @@ export default function AdminSchedules(){
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Manage Schedules</h2>
 
-      <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+      <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
         <input name="date" type="date" value={form.date} onChange={handleChange} className="input" required />
         <input name="time" type="time" value={form.time} onChange={handleChange} className="input" required />
         <select name="busId" value={form.busId} onChange={handleChange} className="input" required>
@@ -63,7 +64,8 @@ export default function AdminSchedules(){
           <option value="">Select Route</option>
           {routes.map(r=> <option key={r.id} value={r.id}>{r.from} → {r.to}</option>)}
         </select>
-        <div className="md:col-span-4">
+        <input name="ticketPrice" type="number" placeholder="Price (Rs)" value={form.ticketPrice} onChange={handleChange} className="input" required min="1" />
+        <div className="md:col-span-5">
           <button className="btn btn-primary mt-2">Create Schedule</button>
         </div>
       </form>
@@ -77,6 +79,7 @@ export default function AdminSchedules(){
             <div key={s.id} className="p-4 bg-white rounded shadow">
               <div className="font-semibold">{new Date(s.date).toLocaleDateString()} {s.time}</div>
               <div className="text-sm text-gray-600">Bus: {s.bus?.busNumber} — Route: {s.route?.from} → {s.route?.to}</div>
+              <div className="text-sm text-primary-600 font-medium">Price: Rs. {s.ticketPrice}</div>
             </div>
           ))}
         </div>

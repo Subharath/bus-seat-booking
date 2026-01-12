@@ -8,7 +8,7 @@ exports.createSchedule = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { busId, routeId, date, time } = req.body;
+    const { busId, routeId, date, time, ticketPrice } = req.body;
 
     // Verify bus and route exist
     const bus = await prisma.bus.findUnique({ where: { id: Number(busId) } });
@@ -33,6 +33,7 @@ exports.createSchedule = async (req, res) => {
         routeId: Number(routeId),
         date: new Date(date),
         time,
+        ticketPrice: Number(ticketPrice),
       },
       include: {
         bus: { include: { seats: true } },

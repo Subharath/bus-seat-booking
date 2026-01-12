@@ -424,7 +424,7 @@ exports.createSchedule = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { date, time, busId, routeId } = req.body;
+    const { date, time, busId, routeId, ticketPrice } = req.body;
 
     // Verify bus and route exist
     const bus = await prisma.bus.findUnique({ where: { id: Number(busId) } });
@@ -444,6 +444,7 @@ exports.createSchedule = async (req, res) => {
         time,
         busId: Number(busId),
         routeId: Number(routeId),
+        ticketPrice: Number(ticketPrice),
       },
       include: {
         bus: true,
@@ -549,7 +550,7 @@ exports.getScheduleById = async (req, res) => {
 exports.updateSchedule = async (req, res) => {
   try {
     const { id } = req.params;
-    const { date, time, busId, routeId } = req.body;
+    const { date, time, busId, routeId, ticketPrice } = req.body;
 
     const schedule = await prisma.schedule.findUnique({
       where: { id: Number(id) },
@@ -568,6 +569,7 @@ exports.updateSchedule = async (req, res) => {
         time: time || schedule.time,
         busId: busId || schedule.busId,
         routeId: routeId || schedule.routeId,
+        ticketPrice: ticketPrice ? Number(ticketPrice) : schedule.ticketPrice,
       },
       include: {
         bus: true,
