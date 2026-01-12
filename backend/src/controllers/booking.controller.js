@@ -9,6 +9,11 @@ exports.getRoutes = async (req, res) => {
         schedules: {
           include: {
             bus: { include: { seats: true } },
+            bookings: {
+              where: {
+                status: 'CONFIRMED'
+              }
+            },
           },
         },
       },
@@ -30,6 +35,11 @@ exports.getSchedulesByRoute = async (req, res) => {
       include: {
         bus: { include: { seats: true } },
         route: true,
+        bookings: {
+          where: {
+            status: 'CONFIRMED'
+          }
+        },
       },
       orderBy: { date: "asc" },
     });
