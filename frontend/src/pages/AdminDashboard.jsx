@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import api from '../services/api'
+import AdminHeader from '../components/layout/AdminHeader'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [adminUser, setAdminUser] = useState(null)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -19,21 +19,17 @@ export default function AdminDashboard() {
         setStats(response.data.stats)
       } catch (err) {
         setError('Failed to fetch dashboard stats')
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          localStorage.clear()
-          navigate('/admin/login')
-        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
-  }, [navigate])
+  }, [])
 
   const handleLogout = () => {
     localStorage.clear()
-    navigate('/admin/login')
+    window.location.href = '/admin/login'
   }
 
   if (loading) {
@@ -56,28 +52,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* HEADER */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Admin Dashboard
-            </h1>
-            {adminUser && (
-              <p className="text-sm text-gray-500 mt-1">
-                Welcome back, {adminUser.name}
-              </p>
-            )}
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg transition"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      </header>
+      <AdminHeader adminUser={adminUser} />
 
       {/* MAIN */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-10">

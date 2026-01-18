@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import api from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
 const AdminRegister = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const AdminRegister = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { adminRegister } = useAuth()
 
   const handleChange = (e) => {
     setFormData({
@@ -39,19 +40,18 @@ const AdminRegister = () => {
     setLoading(true)
 
     try {
-      const response = await api.post('/auth/admin/register', {
+      const result = await adminRegister({
         name: formData.name,
         email: formData.email,
         password: formData.password,
         phone: formData.phone || '',
       })
 
-      // Store tokens and admin info
-      localStorage.setItem('accessToken', response.data.accessToken)
-      localStorage.setItem('refreshToken', response.data.refreshToken)
-      localStorage.setItem('adminUser', JSON.stringify(response.data.admin))
-
-      navigate('/admin/dashboard')
+      if (result.success) {
+        navigate('/admin/dashboard')
+      } else {
+        setError(result.error)
+      }
     } catch (err) {
       // Handle validation errors
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {

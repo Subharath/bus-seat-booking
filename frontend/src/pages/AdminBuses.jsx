@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { adminAPI } from '../services/api'
+import AdminHeader from '../components/layout/AdminHeader'
 
 const INITIAL_CATALOG = {
   'Ashok Leyland': ['Viking', 'Challenger', 'Stag', 'Oyster'],
@@ -18,6 +19,7 @@ export default function AdminBuses() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [adminUser, setAdminUser] = useState(null)
 
   const [form, setForm] = useState({
     busNumber: '',
@@ -32,6 +34,8 @@ export default function AdminBuses() {
     !isCustomMake && form.make ? catalog[form.make] || [] : []
 
   useEffect(() => {
+    const adminData = localStorage.getItem('adminUser')
+    if (adminData) setAdminUser(JSON.parse(adminData))
     fetchBuses()
   }, [])
 
@@ -99,8 +103,10 @@ export default function AdminBuses() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <h2 className="text-2xl font-bold">🚍 Bus Management</h2>
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader adminUser={adminUser} />
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        <h2 className="text-2xl font-bold">🚍 Bus Management</h2>
 
       {/* FORM */}
       <form
@@ -213,6 +219,7 @@ export default function AdminBuses() {
             </div>
           ))
         )}
+      </div>
       </div>
     </div>
   )

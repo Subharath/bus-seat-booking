@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { adminAPI } from '../services/api'
+import AdminHeader from '../components/layout/AdminHeader'
 
 export default function AdminSchedules(){
   const [schedules, setSchedules] = useState([])
@@ -10,8 +11,11 @@ export default function AdminSchedules(){
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [adminUser, setAdminUser] = useState(null)
 
   useEffect(() => {
+    const adminData = localStorage.getItem('adminUser')
+    if (adminData) setAdminUser(JSON.parse(adminData))
     fetchAll()
   }, [])
 
@@ -90,6 +94,7 @@ export default function AdminSchedules(){
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminHeader adminUser={adminUser} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">

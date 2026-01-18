@@ -9,6 +9,7 @@ import ScheduleSelection from './pages/ScheduleSelection'
 import SeatSelection from './pages/SeatSelection'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import UserOnlyRoute from './components/common/UserOnlyRoute'
 import AdminLogin from './pages/AdminLogin'
 import AdminRegister from './pages/AdminRegister'
 import AdminDashboard from './pages/AdminDashboard'
@@ -25,20 +26,20 @@ function App() {
           {/* Admin Routes - No Layout */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/buses" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminBuses /></ProtectedRoute>} />
-          <Route path="/admin/routes" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminRoutes /></ProtectedRoute>} />
-          <Route path="/admin/schedules" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminSchedules /></ProtectedRoute>} />
-          <Route path="/admin/bookings" element={<ProtectedRoute adminOnly={true}><AdminDashboard /><AdminBookings /></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/buses" element={<ProtectedRoute adminOnly={true}><AdminBuses /></ProtectedRoute>} />
+          <Route path="/admin/routes" element={<ProtectedRoute adminOnly={true}><AdminRoutes /></ProtectedRoute>} />
+          <Route path="/admin/schedules" element={<ProtectedRoute adminOnly={true}><AdminSchedules /></ProtectedRoute>} />
+          <Route path="/admin/bookings" element={<ProtectedRoute adminOnly={true}><AdminBookings /></ProtectedRoute>} />
 
           {/* User Routes - With Layout */}
           <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/routes" element={<RoutesPage />} />
-            <Route path="/routes/:routeId/schedules" element={<ScheduleSelection />} />
-            <Route path="/schedules/:scheduleId/seats" element={<SeatSelection />} />
+            <Route path="/" element={<UserOnlyRoute><Home /></UserOnlyRoute>} />
+            <Route path="/login" element={<UserOnlyRoute><Login /></UserOnlyRoute>} />
+            <Route path="/register" element={<UserOnlyRoute><Register /></UserOnlyRoute>} />
+            <Route path="/routes" element={<UserOnlyRoute><RoutesPage /></UserOnlyRoute>} />
+            <Route path="/routes/:routeId/schedules" element={<UserOnlyRoute><ScheduleSelection /></UserOnlyRoute>} />
+            <Route path="/schedules/:scheduleId/seats" element={<UserOnlyRoute><SeatSelection /></UserOnlyRoute>} />
             <Route
               path="/dashboard"
               element={

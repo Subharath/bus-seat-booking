@@ -29,12 +29,22 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      // Check if this is an admin session
+      const adminUser = localStorage.getItem('adminUser')
+      if (adminUser) {
+        setUser(JSON.parse(adminUser))
+        setLoading(false)
+        return
+      }
+
+      // Otherwise, fetch regular user
       const response = await authAPI.getMe()
       setUser(response.data.user)
     } catch (error) {
       // Token invalid, clear it
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('adminUser')
     } finally {
       setLoading(false)
     }
@@ -76,9 +86,48 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const adminLogin = async (email, password) => {
+    try {
+      setError(null)
+      const response = await authAPI.adminLogin({ email, password })
+      const { admin, accessToken, refreshToken } = response.data
+
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('refreshToken', refreshToken)
+      localStorage.setItem('adminUser', JSON.stringify(admin))
+      setUser(admin)
+
+      return { success: true, admin }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Admin login failed'
+      setError(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const adminRegister = async (userData) => {
+    try {
+      setError(null)
+      const response = await authAPI.adminRegister(userData)
+      const { admin, accessToken, refreshToken } = response.data
+
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('refreshToken', refreshToken)
+      localStorage.setItem('adminUser', JSON.stringify(admin))
+      setUser(admin)
+
+      return { success: true, admin }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Admin registration failed'
+      setError(errorMessage)
+      return { success: false, error: errorMessage }
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('adminUser')
     setUser(null)
   }
 
@@ -87,6 +136,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    adminLogin,
+    adminRegister,
     register,
     logout,
     isAuthenticated: !!user,

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import api from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('')
@@ -8,6 +8,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { adminLogin } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -15,17 +16,13 @@ const AdminLogin = () => {
     setLoading(true)
 
     try {
-      const response = await api.post('/auth/admin/login', {
-        email,
-        password,
-      })
-
-      // Store tokens and admin info in standard keys so AuthContext and api interceptors work
-      localStorage.setItem('accessToken', response.data.accessToken)
-      localStorage.setItem('refreshToken', response.data.refreshToken)
-      localStorage.setItem('adminUser', JSON.stringify(response.data.admin))
-
-      navigate('/admin/dashboard')
+      const result = await adminLogin(email, password)
+      
+      if (result.success) {
+        navigate('/admin/dashboard')
+      } else {
+        setError(result.error)
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed')
       console.error('Admin login error:', err)

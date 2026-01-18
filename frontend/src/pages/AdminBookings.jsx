@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { adminAPI } from '../services/api'
+import AdminHeader from '../components/layout/AdminHeader'
 
 export default function AdminBookings(){
   const [bookings, setBookings] = useState([])
@@ -9,8 +10,11 @@ export default function AdminBookings(){
   const [error, setError] = useState(null)
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [adminNotes, setAdminNotes] = useState('')
+  const [adminUser, setAdminUser] = useState(null)
 
   useEffect(()=>{ 
+    const adminData = localStorage.getItem('adminUser')
+    if (adminData) setAdminUser(JSON.parse(adminData))
     fetchData()
   },[])
 
@@ -75,8 +79,10 @@ export default function AdminBookings(){
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Bookings Management</h2>
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader adminUser={adminUser} />
+      <div className="p-6">
+        <h2 className="text-2xl font-bold mb-4">Bookings Management</h2>
 
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
 
@@ -225,6 +231,7 @@ export default function AdminBookings(){
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { adminAPI } from '../services/api'
+import AdminHeader from '../components/layout/AdminHeader'
 
 const SRI_LANKAN_CITIES = [
   'Colombo',
@@ -27,8 +28,13 @@ export default function AdminRoutes() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [adminUser, setAdminUser] = useState(null)
 
-  useEffect(() => { fetchRoutes() }, [])
+  useEffect(() => { 
+    const adminData = localStorage.getItem('adminUser')
+    if (adminData) setAdminUser(JSON.parse(adminData))
+    fetchRoutes() 
+  }, [])
 
   useEffect(() => {
     if (success) {
@@ -88,6 +94,7 @@ export default function AdminRoutes() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminHeader adminUser={adminUser} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">
