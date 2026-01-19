@@ -117,12 +117,16 @@ Keep this URL safe - you'll need it for the backend deployment.
 3. Choose your repository: `bus-seat-booking`
 4. Railway will detect it's a Node.js project
 
-### Step 5.2: Configure Backend Root Directory
-1. Click on the new service
+### Step 5.2: Configure Backend Root Directory ⚠️ CRITICAL STEP
+1. Click on the new service (it might be deploying and failing - that's okay)
 2. Go to **"Settings"** tab
-3. Scroll to **"Service Settings"**
-4. Set **"Root Directory"** to: `backend`
-5. Click **"Save"**
+3. Scroll down to **"Service Settings"** section
+4. Find **"Root Directory"** field
+5. **Type exactly:** `backend` (no slashes, no spaces)
+6. Click **"Save"** or **"Update"**
+7. The service will automatically redeploy with the correct directory
+
+**Why this is needed:** Railway needs to know which folder contains your app since you have both backend and frontend in one repository.
 
 ### Step 5.3: Add Environment Variables
 1. Go to **"Variables"** tab
@@ -171,11 +175,16 @@ FRONTEND_URL=
 3. Choose the same repository: `bus-seat-booking`
 4. Railway creates another service
 
-### Step 6.2: Configure Frontend Root Directory
-1. Click on the frontend service
+### Step 6.2: Configure Frontend Root Directory ⚠️ CRITICAL STEP
+1. Click on the frontend service (it might be deploying and failing - that's okay)
 2. Go to **"Settings"** tab
-3. Set **"Root Directory"** to: `frontend`
-4. Click **"Save"**
+3. Scroll down to **"Service Settings"** section
+4. Find **"Root Directory"** field
+5. **Type exactly:** `frontend` (no slashes, no spaces)
+6. Click **"Save"** or **"Update"**
+7. The service will automatically redeploy with the correct directory
+
+**Why this is needed:** This tells Railway to build from the frontend folder instead of the root.
 
 ### Step 6.3: Add Frontend Environment Variables
 1. Go to **"Variables"** tab
