@@ -1,5 +1,8 @@
 const cors = require("cors");
 const express = require("express");
+const path = require("path");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 require("dotenv").config();
 
 const app = express();
@@ -35,9 +38,54 @@ app.use(
 
 app.use(express.json());
 
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Bus Seat Booking API",
+      version: "1.0.0",
+      description: "API documentation for Bus Seat Booking System",
+      contact: {
+        name: "API Support",
+      },
+    },
+    servers: [
+      {
+        url: process.env.BACKEND_URL || "http://localhost:5000",
+        description: "Development server",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: [
+    path.join(__dirname, "routes", "auth.routes.js"),
+    path.join(__dirname, "routes", "user.routes.js"),
+    path.join(__dirname, "routes", "admin.routes.js"),
+  ],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Swagger UI route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Health check
 app.get("/", (req, res) => {
-  res.send("Bus Seat Booking API running 🚍");
+  res.send("Bus Seat Booking API running 🚍 - API Docs: /api-docs");
 });
 
 // Authentication routes
