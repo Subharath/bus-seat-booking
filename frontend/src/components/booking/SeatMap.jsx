@@ -14,6 +14,19 @@ const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats })
     }
   }, [bus, availableSeats])
 
+  const mergeStubLastRow = (grid) => {
+    // If the last row has fewer than 4 seats, merge it into the previous row
+    if (grid.length >= 2) {
+      const lastRow = grid[grid.length - 1]
+      const prevRow = grid[grid.length - 2]
+      if (lastRow.length < 4 && prevRow.length === 4) {
+        grid[grid.length - 2] = [...prevRow, ...lastRow]
+        grid.pop()
+      }
+    }
+    return grid
+  }
+
   const generateLayoutFromSeats = (seats, available) => {
     // Group seats by row
     const seatsByRow = {}
@@ -36,7 +49,7 @@ const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats })
       grid.push(rowSeats)
     })
 
-    setSeatGrid(grid)
+    setSeatGrid(mergeStubLastRow(grid))
   }
 
   const generateSeatGrid = (layout, available) => {
@@ -69,7 +82,7 @@ const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats })
         grid.push(rowSeats)
       })
 
-      setSeatGrid(grid)
+      setSeatGrid(mergeStubLastRow(grid))
     } else {
       // Fallback to bus.seats
       if (bus?.seats) {
@@ -150,8 +163,8 @@ const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats })
 
               {/* Seats Container - Determine layout by actual seat count */}
               {isFiveSeats ? (
-                // 5 seats: centered in a line
-                <div className="flex gap-2 justify-center">
+                // 5 rear seats: no aisle, spread across the same full bus width as 4-seat rows
+                <div className="flex justify-between" style={{ width: '284px' }}>
                   {row.map((seat, seatIndex) => {
                     const reserved = isReservedSeat(seat.seatNo, rowIndex)
                     const status = reserved ? 'reserved' : getSeatStatus(seat)
@@ -170,7 +183,7 @@ const SeatMap = ({ bus, availableSeats, selectedSeats, onSeatSelect, maxSeats })
                         `}
                         title={`Seat ${seat.seatNo} - ${reserved ? 'Reserved' : status}`}
                       >
-                        {seat.seatNo.match(/\d+/)?.[0] || seatIndex + 1}
+                        {seatIndex + 1}
                       </button>
                     )
                   })}
