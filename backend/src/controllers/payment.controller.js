@@ -54,37 +54,24 @@ exports.initiatePayment = async (req, res) => {
 
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
-
-    // Use existing paymentOrderId or generate a new one
     const orderId = booking.paymentOrderId || `BK-${booking.id}-${Date.now()}`;
-    const amount = parseFloat(booking.schedule.ticketPrice).toFixed(2);
+
+    // Fix: Format amount to exactly 2 decimal places as a STRING
+    const amount = Number(booking.schedule.ticketPrice).toFixed(2);
     const currency = "LKR";
+
+    // Debug log - check these values in your terminal
+    console.log("=== PayHere Payment Debug ===");
+    console.log("Merchant ID:", merchantId);
+    console.log("Order ID:", orderId);
+    console.log("Amount:", amount);
+    console.log("Currency:", currency);
+    console.log("Secret:", merchantSecret);
 
     const hash = generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret);
 
-    // Split name for PayHere fields
-    const nameParts = (booking.passengerName || booking.user.name).split(" ");
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(" ") || "-";
-
-    const paymentData = {
-      merchant_id: merchantId,
-      return_url: `${process.env.FRONTEND_URL}/payment/success`,
-      cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
-      notify_url: `${process.env.BACKEND_URL}/api/payment/notify`,
-      order_id: orderId,
-      items: `Bus Ticket - ${booking.schedule.route.from} to ${booking.schedule.route.to}`,
-      currency,
-      amount,
-      first_name: firstName,
-      last_name: lastName,
-      email: booking.user.email,
-      phone: booking.phoneNumber || booking.user.phone || "0000000000",
-      address: "Sri Lanka",
-      city: booking.schedule.route.from,
-      country: "Sri Lanka",
-      hash,
-    };
+    console.log("Generated Hash:", hash);
+    console.log("=============================");
 
     // Save orderId to booking
     await prisma.booking.update({
@@ -96,7 +83,24 @@ exports.initiatePayment = async (req, res) => {
     });
 
     res.json({
-      paymentData,
+      paymentData: {
+        merchant_id: merchantId,
+        return_url: `${process.env.FRONTEND_URL}/payment/success`,
+        cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+        notify_url: `${process.env.BACKEND_URL}/api/payment/notify`,
+        order_id: orderId,
+        items: `Bus Ticket - ${booking.schedule.route.from} to ${booking.schedule.route.to}`,
+        currency,
+        amount,
+        first_name: (booking.passengerName || booking.user.name).split(" ")[0],
+        last_name: (booking.passengerName || booking.user.name).split(" ").slice(1).join(" ") || "-",
+        email: booking.user.email,
+        phone: booking.phoneNumber || booking.user.phone || "0000000000",
+        address: "Sri Lanka",
+        city: booking.schedule.route.from,
+        country: "Sri Lanka",
+        hash,
+      },
       paymentUrl: process.env.PAYHERE_SANDBOX_URL,
     });
   } catch (error) {
