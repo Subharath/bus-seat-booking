@@ -71,6 +71,11 @@ model Booking {
   cancellationApprovedAt DateTime?
   cancellationReason String?
   adminNotes    String?
+
+  // PayHere Payment Fields
+  paymentOrderId  String?   // PayHere order ID
+  paymentStatus   PaymentStatus @default(UNPAID)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -78,7 +83,7 @@ model Booking {
   seat      Seat     @relation(fields: [seatId], references: [id])
   schedule  Schedule @relation(fields: [scheduleId], references: [id])
 
-  @@unique([seatId, scheduleId]) // 🚨 prevents double booking
+  @@unique([seatId, scheduleId]) // prevents double booking
 }
 
 enum Role {
@@ -95,4 +100,11 @@ enum CancellationStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
 }
