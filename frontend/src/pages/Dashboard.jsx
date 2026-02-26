@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { authAPI, bookingAPI } from '../services/api'
 
 const Dashboard = () => {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -244,6 +246,20 @@ const Dashboard = () => {
                       >
                         {booking.status}
                       </span>
+                      {/* Payment Status Badge */}
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          booking.paymentStatus === 'PAID'
+                            ? 'bg-green-100 text-green-800'
+                            : booking.paymentStatus === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : booking.paymentStatus === 'FAILED'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        💳 {booking.paymentStatus || 'UNPAID'}
+                      </span>
                       {booking.cancellationStatus && (
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getCancellationStatusColor(booking.cancellationStatus)}`}>
                           Cancel: {booking.cancellationStatus}
@@ -287,55 +303,73 @@ const Dashboard = () => {
                   </div>
 
                   <div className="ml-4 flex flex-col gap-2">
-                    <button
-                      onClick={() => downloadTicketPDF(booking)}
-                      className="btn btn-primary text-sm whitespace-nowrap"
-                    >
-                      📄 Download Ticket
-                    </button>
-
-                    {booking.status === 'CONFIRMED' && !booking.cancellationStatus && (
-                      <>
-                        {selectedBooking === booking.id ? (
-                          <div className="w-64 bg-yellow-50 border border-yellow-200 rounded p-3">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              Cancellation Reason (Optional)
-                            </label>
-                            <textarea
-                              value={cancellationReason}
-                              onChange={(e) => setCancellationReason(e.target.value)}
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                              placeholder="Reason for cancellation..."
-                              rows="2"
-                            />
-                            <div className="flex gap-2 text-xs">
-                              <button
-                                onClick={() => handleRequestCancellation(booking.id)}
-                                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-1 rounded font-semibold transition"
-                              >
-                                Confirm Request
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedBooking(null)
-                                  setCancellationReason('')
-                                }}
-                                className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-1 rounded font-semibold transition"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setSelectedBooking(booking.id)}
-                            className="btn btn-outline text-sm"
-                          >
-                            Request Cancel
-                          </button>
-                        )}
-                      </>
+                    {/* Download Ticket - only for PAID bookings */}
+                    {booking.paymentStatus === 'PAID' && (
+                      <button
+                        onClick={() => downloadTicketPDF(booking)}
+                        className="btn btn-primary text-sm whitespace-nowrap"
+                      >
+                        📄 Download Ticket
+                      </button>
                     )}
+
+                    {/* Pay Now Button - show if UNPAID or FAILED and not CANCELLED */}
+                    {booking.status !== 'CANCELLED' &&
+                      booking.paymentStatus !== 'PAID' && (
+                        <button
+                          onClick={() => navigate(`/payment/${booking.id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm transition whitespace-nowrap"
+                        >
+                          💳 Pay Now
+                        </button>
+                      )}
+
+                    {/* Cancellation Section - only for PAID & CONFIRMED bookings */}
+                    {booking.status === 'CONFIRMED' &&
+                      booking.paymentStatus === 'PAID' &&
+                      !booking.cancellationStatus && (
+                        <>
+                          {selectedBooking === booking.id ? (
+                            <div className="w-64 bg-yellow-50 border border-yellow-200 rounded p-3">
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Cancellation Reason (Optional)
+                              </label>
+                              <textarea
+                                value={cancellationReason}
+                                onChange={(e) => setCancellationReason(e.target.value)}
+                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                                placeholder="Reason for cancellation..."
+                                rows="2"
+                              />
+                              <div className="flex gap-2 text-xs">
+                                <button
+                                  onClick={() => handleRequestCancellation(booking.id)}
+                                  className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-1 rounded font-semibold transition"
+                                >
+                                  Confirm Request
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedBooking(null)
+                                    setCancellationReason('')
+                                  }}
+                                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-1 rounded font-semibold transition"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setSelectedBooking(booking.id)}
+                              className="btn btn-outline text-sm"
+                            >
+                              Request Cancel
+                            </button>
+                          )}
+                        </>
+                      )}
+
                     {booking.cancellationStatus === 'PENDING' && (
                       <div className="text-xs text-yellow-700 bg-yellow-50 px-3 py-2 rounded text-center">
                         Awaiting Admin Approval
