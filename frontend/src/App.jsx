@@ -17,6 +17,9 @@ import AdminBuses from './pages/AdminBuses'
 import AdminRoutes from './pages/AdminRoutes'
 import AdminSchedules from './pages/AdminSchedules'
 import AdminBookings from './pages/AdminBookings'
+import Payment from './pages/Payment'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentCancel from './pages/PaymentCancel'
 
 function App() {
   return (
@@ -40,14 +43,12 @@ function App() {
             <Route path="/routes" element={<UserOnlyRoute><RoutesPage /></UserOnlyRoute>} />
             <Route path="/routes/:routeId/schedules" element={<UserOnlyRoute><ScheduleSelection /></UserOnlyRoute>} />
             <Route path="/schedules/:scheduleId/seats" element={<UserOnlyRoute><SeatSelection /></UserOnlyRoute>} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+            {/* Payment Routes */}
+            <Route path="/payment/:bookingId" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Route>
         </Routes>
       </Router>
