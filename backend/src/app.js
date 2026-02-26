@@ -42,4 +42,7 @@ app.use("/api/admin", require("./routes/admin.routes"));
 // User routes (public booking routes, protected user routes)
 app.use("/api/user", require("./routes/user.routes"));
 
+// Payment routes
+app.use("/api/payment", require("./routes/payment.routes"));
+
 module.exports = app;
