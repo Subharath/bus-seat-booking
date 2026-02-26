@@ -87,6 +87,12 @@ export const bookingAPI = {
   requestCancellation: (bookingId, data) => api.post(`/user/bookings/${bookingId}/cancel-request`, data),
 }
 
+// Payment API
+export const paymentAPI = {
+  initiate: (bookingId) => api.post(`/payment/initiate/${bookingId}`),
+  checkStatus: (bookingId) => api.get(`/payment/status/${bookingId}`),
+}
+
 // Admin API
 export const adminAPI = {
   buses: {
