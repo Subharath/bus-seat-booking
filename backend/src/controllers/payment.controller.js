@@ -54,7 +54,8 @@ exports.initiatePayment = async (req, res) => {
 
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
-    const orderId = booking.paymentOrderId || `BK-${booking.id}-${Date.now()}`;
+    //Always generate fresh ID
+    const orderId = `BK-${booking.id}-${Date.now()}`;
 
     // Fix: Format amount to exactly 2 decimal places as a STRING
     const amount = Number(booking.schedule.ticketPrice).toFixed(2);
