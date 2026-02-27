@@ -126,7 +126,12 @@ exports.paymentNotify = async (req, res) => {
       md5sig,
     } = req.body;
 
+    const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
+
+    if (merchant_id !== merchantId) {
+      return res.status(400).send("Invalid merchant");
+    }
 
     // Verify PayHere signature
     const hashedSecret = crypto
