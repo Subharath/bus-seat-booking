@@ -54,11 +54,15 @@ exports.initiatePayment = async (req, res) => {
 
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
-    //Always generate fresh ID
+    
+    // Always generate fresh order ID
     const orderId = `BK-${booking.id}-${Date.now()}`;
 
-    // Fix: Format amount to exactly 2 decimal places as a STRING
-    const amount = Number(booking.schedule.ticketPrice).toFixed(2);
+    // Amount formatted correctly per PayHere docs
+    const amount = parseFloat(booking.schedule.ticketPrice)
+      .toLocaleString('en-us', { minimumFractionDigits: 2 })
+      .replaceAll(',', '');
+      
     const currency = "LKR";
 
     // Debug log - check these values in your terminal
