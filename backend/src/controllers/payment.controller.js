@@ -4,13 +4,17 @@ const prisma = new PrismaClient();
 
 // Generate MD5 hash for PayHere payment initiation
 function generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret) {
+  // Format amount as "XXXX.XX" (2 decimals, no commas/spaces)
+  const formattedAmount = Number(amount).toFixed(2);
+  
   const hashedSecret = crypto
     .createHash("md5")
     .update(merchantSecret)
     .digest("hex")
     .toUpperCase();
 
-  const hashString = `${merchantId}${orderId}${amount}${currency}${hashedSecret}`;
+  const hashString = `${merchantId}${orderId}${formattedAmount}${currency}${hashedSecret}`;
+  
   return crypto
     .createHash("md5")
     .update(hashString)
@@ -55,28 +59,18 @@ exports.initiatePayment = async (req, res) => {
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
     
-    // Always generate fresh order ID
     const orderId = `BK-${booking.id}-${Date.now()}`;
-
-    // Amount formatted correctly per PayHere docs
-    const amount = parseFloat(booking.schedule.ticketPrice)
-      .toLocaleString('en-us', { minimumFractionDigits: 2 })
-      .replaceAll(',', '');
-      
+    const amount = Number(booking.schedule.ticketPrice).toFixed(2); // Format here too
     const currency = "LKR";
 
-    // Debug log - check these values in your terminal
+    const hash = generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret);
+
     console.log("=== PayHere Payment Debug ===");
     console.log("Merchant ID:", merchantId);
     console.log("Order ID:", orderId);
     console.log("Amount:", amount);
     console.log("Currency:", currency);
-    console.log("Secret:", merchantSecret);
-
-    const hash = generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret);
-
-    console.log("Generated Hash:", hash);
-    console.log("=============================");
+    console.log("Hash:", hash);
 
     // Save orderId to booking
     await prisma.booking.update({
@@ -149,7 +143,7 @@ exports.paymentNotify = async (req, res) => {
       .toUpperCase();
 
     if (localSig !== md5sig) {
-      console.error("❌ PayHere hash mismatch - possible fraud attempt");
+      console.error("PayHere hash mismatch - possible fraud attempt");
       return res.status(400).send("Hash mismatch");
     }
 
@@ -169,19 +163,19 @@ exports.paymentNotify = async (req, res) => {
         where: { id: booking.id },
         data: { paymentStatus: "PAID" },
       });
-      console.log(`✅ Payment PAID for booking ${booking.id}`);
+      console.log(`Payment PAID for booking ${booking.id}`);
     } else if (status_code === "0") {
       await prisma.booking.update({
         where: { id: booking.id },
         data: { paymentStatus: "PENDING" },
       });
-      console.log(`⏳ Payment PENDING for booking ${booking.id}`);
+      console.log(`Payment PENDING for booking ${booking.id}`);
     } else {
       await prisma.booking.update({
         where: { id: booking.id },
         data: { paymentStatus: "FAILED" },
       });
-      console.log(`❌ Payment FAILED for booking ${booking.id} - status: ${status_code}`);
+      console.log(`Payment FAILED for booking ${booking.id} - status: ${status_code}`);
     }
 
     res.send("OK");
