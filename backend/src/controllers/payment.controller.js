@@ -1,6 +1,5 @@
 const crypto = require("crypto");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../prisma");
 
 // Generate MD5 hash for PayHere payment initiation
 function generatePayHereHash(merchantId, orderId, amount, currency, merchantSecret) {
